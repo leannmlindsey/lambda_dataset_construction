@@ -38,11 +38,8 @@ Install the required Python packages:
 
 ```bash
 # Create and activate conda environment
-conda create -n dna_classification python=3.8
+conda create -f environment.yml
 conda activate dna_classification
-
-# Install dependencies
-pip install -r requirements.txt
 
 # BLAST+ tools need to be installed separately
 # On Ubuntu/Debian:
