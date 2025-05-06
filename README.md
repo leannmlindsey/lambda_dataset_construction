@@ -38,7 +38,7 @@ Install the required Python packages:
 
 ```bash
 # Create and activate conda environment
-conda create -f environment.yml
+conda env create -f environment.yml
 conda activate dna_classification
 
 # BLAST+ tools need to be installed separately
