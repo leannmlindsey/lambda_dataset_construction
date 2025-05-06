@@ -51,12 +51,15 @@ conda activate dna_classification
 ## Usage
 Follow these steps to create and validate the dataset:
 ### Download Data
+The phage dataset can be downloaded from [PhageScope](https://phagescope.deepomics.org/download). Download all of the links in the [Phage Meta Data Download](https://phagescope.deepomics.org/download#meta) section as well as the [Phage FASTA File Download](https://phagescope.deepomics.org/download#fasta) section. The scripts below will notify you if you are missing any of the files.
 ```
 # Download phage data
-python 01_data_download/download_phagescope.py --output_dir data/phagescope
+mkdir -P data/phagescope
+# Move all of the files downloaded from the above link into this directory.
 
-# Download bacterial data (only representative genomes)
-python 01_data_download/download_gtdb.py --output_dir data/gtdb --only_representative
+# Download all representative bacterial sequences from GTDB
+mkdir -P data/gtdb 
+sh 01_data_download/download_gtdb.sh data/gtdb
 
 # Combine phage metadata
 python 01_data_download/combine_phage_metadata.py --input_dir data/phagescope/metadata --output_file data/phagescope/combined_metadata.csv
