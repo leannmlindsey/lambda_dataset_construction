@@ -51,7 +51,9 @@ conda activate dna_classification
 ## Usage
 Follow these steps to create and validate the dataset:
 ### Download Data
-The phage dataset can be downloaded from [PhageScope](https://phagescope.deepomics.org/download). Download all of the links in the [Phage Meta Data Download](https://phagescope.deepomics.org/download#meta) section as well as the [Phage FASTA File Download](https://phagescope.deepomics.org/download#fasta) section. The scripts below will notify you if you are missing any of the files.
+First download all of the phage sequences and metadata from [PhageScope](https://phagescope.deepomics.org/download) and the bacterial sequences from the [Genome Taxonomy Database (GTDB)](https://gtdb.ecogenomic.org/).
+
+There is no FTP or API for PhageScope so you must download all of the links in the [Phage Meta Data Download](https://phagescope.deepomics.org/download#meta) section as well as the [Phage FASTA File Download](https://phagescope.deepomics.org/download#fasta) section. The scripts below will notify you if you are missing any of the files.
 ```
 # Download phage data
 mkdir -P data/phagescope
@@ -65,6 +67,8 @@ sh 01_data_download/download_gtdb.sh data/gtdb
 python 01_data_download/combine_phage_metadata.py --input_dir data/phagescope/metadata --output_file data/phagescope/combined_metadata.csv
 ```
 ### Create BLAST Databases
+Since bacteriophage are present in bacterial genomes, we must remove as many of the prophage sequences as possible to avoid contamination of phage sequences in our labeled bacteria set. Similarly, bacteriophage sometimes incorporate bacterial genes into their genomes via horizontal gene transfer and those also must be removed from the phage dataset.
+
 ```
 # Create phage BLAST database
 bash 02_database_creation/create_phage_blast_db.sh --phage_dir data/phagescope/fna --output_dir data/blast_db --db_name phage_db
@@ -73,6 +77,7 @@ bash 02_database_creation/create_phage_blast_db.sh --phage_dir data/phagescope/f
 bash 02_database_creation/create_bacteria_blast_db.sh --bacteria_dir data/gtdb/fna --output_dir data/blast_db --db_name bacteria_db
 ```
 ### Cross-Filter Sequences
+
 ```
 # BLAST bacteria against phage
 bash 03_cross_filtering/blast_bacteria_against_phage.sh --bacteria_fasta data/blast_db/combined_bacteria.fasta --phage_db data/blast_db/phage_db --output_dir data/blast_results
@@ -88,10 +93,14 @@ python 03_cross_filtering/remove_bacteria_from_phage.py --blast_results data/bla
 ```
 
 ### Remove Ambiguous Sequences
+Genomes sometimes contain [IUPAC](https://www.bioinformatics.org/sms/iupac.html) codes for ambiguous nucleotide sequences and because of differences in how the databases use these codes, this can mislead the model, so we will remove these sequences prior to sampling.
+
 ```
 python 04_quality_control/remove_ambiguous_sequences.py --bacteria_fasta data/filtered_data/bacteria_filtered.fasta --phage_fasta data/filtered_data/phage_filtered.fasta --output_dir data/clean_data --max_n_percent 0.0
 ```
 ### Create Dataset Splits
+The PhageScope database has clustered each phage genome by sequence similarity and we will select our samples so that we do not have overlap between clusters in our training, validation and test datasets. We will do the same for the bacterial sequences.
+
 ```
 # Create genome clusters
 python 05_dataset_creation/create_genome_clusters.py --bacteria_fasta data/clean_data/bacteria_clean.fasta --phage_fasta data/clean_data/phage_clean.fasta --bacteria_metadata data/gtdb/metadata/bac120_metadata.tsv --phage_metadata data/phagescope/combined_metadata.csv --output_dir data/clusters
@@ -124,7 +133,7 @@ Each file has the following columns:
 ## Verification Results
 The verification process checks for:
 
-Class balance
+- Class balance
 - Sequence length distribution
 - Absence of ambiguous nucleotides
 - GC content distribution
