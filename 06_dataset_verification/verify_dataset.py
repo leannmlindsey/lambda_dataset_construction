@@ -9,7 +9,7 @@ import argparse
 from collections import Counter
 import re
 import matplotlib.pyplot as plt
-from Bio.SeqUtils import GC
+from Bio.SeqUtils import gc_fraction
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Verify dataset quality')
@@ -89,8 +89,8 @@ def verify_dataset(data, split, output_dir):
     }
     
     # Calculate GC content
-    bacteria_gc = data[data['label'] == 0]['sequence'].apply(GC)
-    phage_gc = data[data['label'] == 1]['sequence'].apply(GC)
+    bacteria_gc = data[data['label'] == 0]['sequence'].apply(gc_fraction)
+    phage_gc = data[data['label'] == 1]['sequence'].apply(gc_fraction)
     
     results['gc_content'] = {
         'bacteria_mean': bacteria_gc.mean(),
